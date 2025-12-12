@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.png">
+    <title>REDVOID</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background:#000;
+            color:#ff0000;
+            font-family:'Segoe UI',sans-serif;
+            height:100vh;
+            overflow:hidden;
+            background:radial-gradient(circle at center, #110000 0%, #000 70%);
+        }
+        #credit {
+            position:fixed; top:10px; right:16px; z-index:9999;
+            font: bold 12px monospace; color:#ff3333;
+            text-shadow:0 0 10px #f00; animation:p 4s infinite;
+        }
+        @keyframes p{0%,100%{opacity:.6}50%{opacity:1;text-shadow:0 0 20px #f00}}
+
+        #tabbar {
+            height:52px; background:#111;
+            border-bottom:2px solid #f00;
+            display:flex; align-items:center; padding:0 10px;
+            box-shadow:0 4px 15px #000;
+        }
+        .tab {
+            height:38px; background:#222; color:#f33;
+            padding:0 20px; margin:0 4px; border-radius:8px 8px 0 0;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; font: bold 13px monospace;
+            transition:.3s; min-width:120px; position:relative; overflow:hidden;
+        }
+        .tab:hover { background:#c00; color:#000; transform:translateY(-4px); box-shadow:0 0 20px #f00; }
+        .tab.active { background:#f00; color:#000; font-weight:900; box-shadow:0 0 20px #f66; }
+
+        #newtab {
+            width:38px; height:38px; background:#f00; color:#000;
+            border-radius:50%; margin-left:auto; cursor:pointer;
+            display:grid; place-items:center; font-size:24px; font-weight:bold;
+            box-shadow:0 0 15px #f00; transition:.4s;
+        }
+        #newtab:hover { transform:rotate(180deg) scale(1.2); background:#fff; }
+
+        #addressbar {
+            height:50px; background:#0a0a0a; display:flex; align-items:center;
+            padding:0 15px; border-top:1px solid #300;
+        }
+        #urlinput {
+            width:100%; height:36px; background:#000; color:#f66;
+            border:2px solid #400; border-radius:20px; padding:0 20px;
+            font-size:15px; outline:none; transition:.3s;
+        }
+        #urlinput:focus { border-color:#f00; box-shadow:0 0 15px #f003; }
+
+        #content { height:calc(100vh - 102px); position:relative; }
+
+        .panel { position:absolute; inset:0; display:none; background:#000; }
+        .panel.active { display:block; }
+
+        .home {
+            height:100%; display:flex; flex-direction:column;
+            justify-content:center; align-items:center; gap:40px;
+        }
+        .home h1 {
+            font-size:60px; background:linear-gradient(90deg,#f00,#f66);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            text-shadow:0 0 30px #f00;
+        }
+        .home-input {
+            width:80%; max-width:800px; padding:22px 30px;
+            font-size:28px; background:transparent; color:#fff;
+            border:4px solid #f00; border-radius:50px; text-align:center;
+            outline:none; box-shadow:0 0 30px #f00;
+            transition:.4s;
+        }
+        .home-input:focus { border-color:#f66; box-shadow:0 0 50px #f66; transform:scale(1.03); }
+
+        .suggestions { display:flex; gap:25px; flex-wrap:wrap; justify-content:center; }
+        .sbtn {
+            padding:16px 35px; background:#200; color:#f66;
+            border:2px solid #f00; border-radius:40px; cursor:pointer;
+            font:bold 18px monospace; min-width:260px; text-align:center;
+            transition:.4s; box-shadow:0 8px 20px #000;
+        }
+        .sbtn:hover {
+            background:#f00; color:#000; transform:translateY(-10px);
+            box-shadow:0 0 40px #f66;
+        }
+
+        iframe { width:100%; height:100%; border:none; }
+    </style>
+</head>
+<body>
+
+    <div id="credit">MADE BY HACKER114</div>
+
+    <div id="tabbar"><div id="newtab">+</div></div>
+    <div id="addressbar"><input id="urlinput" placeholder="Enter URL..."></div>
+    <div id="content"></div>
+
+    <script>
+        const sites = [
+            {n:"CRAZY GAMES", u:"https://crazygames.com"},
+            {n:"BING", u:"https://bing.com"}
+        ];
+
+        let tabs = [], cur = -1;
+        const tb = document.getElementById('tabbar');
+        const nt = document.getElementById('newtab');
+        const ui = document.getElementById('urlinput');
+        const ct = document.getElementById('content');
+
+        function home(p) {
+            p.innerHTML = `
+                <div class="home">
+                    <h1>REDVOID</h1>
+                    <input class="home-input" placeholder="SEARCH OR ENTER URL" onkeydown="if(event.key==='Enter')go(this.value)">
+                    <div class="suggestions">
+                        ${sites.map(s=>`<div class="sbtn" onclick="go('${s.u}')">${s.n}</div>`).join('')}
+                    </div>
+                </div>`;
+        }
+
+        window.go = u => load(u);
+
+        function tab(i) {
+            if(cur>=0){
+                tabs[cur].el.classList.remove('active');
+                tabs[cur].pn.classList.remove('active');
+            }
+            cur = i;
+            tabs[i].el.classList.add('active');
+            tabs[i].pn.classList.add('active');
+            ui.value = tabs[i].url||'';
+            document.title = tabs[i].title;
+            favicon(tabs[i].fav);
+        }
+
+        function favicon(u){
+            document.querySelectorAll('link[rel*="icon"]').forEach(e=>e.remove());
+            if(u){
+                let l=document.createElement('link');
+                l.rel='icon'; l.href=u; document.head.appendChild(l);
+            }
+        }
+
+        function load(raw){
+            let url = raw.trim();
+            if(!url) return;
+            if(!/^https?:\/\//i.test(url)) url='https://'+url;
+
+            const p = tabs[cur].pn;
+            p.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock allow-top-navigation"></iframe>';
+            const f = p.querySelector('iframe');
+
+            tabs[cur].url = url;
+            ui.value = url;
+
+            fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url))
+            .then(r=>r.ok?r.text():Promise.reject('Blocked'))
+            .then(h=>{
+                const d = new DOMParser().parseFromString(h,'text/html');
+                if(!d.querySelector('base')){
+                    const b=d.createElement('base'); b.href=url; d.head.prepend(b);
+                }
+                const t = d.title||url;
+                const ico = d.querySelector('link[rel*="icon"]')?.href || new URL('/favicon.ico',url).href;
+
+                f.srcdoc = d.documentElement.outerHTML;
+
+                tabs[cur].title = t;
+                tabs[cur].fav = ico;
+                tabs[cur].el.querySelector('span').textContent = t.slice(0,18)+(t.length>18?'...':'');
+                document.title = 'REDVOID • '+t;
+                favicon(ico);
+            })
+            .catch(e=> p.innerHTML=`<div style="color:#f66;text-align:center;padding:100px;font-size:24px">ERROR<br>${e}</div>`);
+        }
+
+        function newTab(start=''){
+            const i = tabs.length;
+            const el = document.createElement('div'); el.className='tab';
+            el.innerHTML = '<span>New Tab</span>';
+            el.onclick = ()=>tab(i);
+            tb.insertBefore(el, nt);
+
+            const pn = document.createElement('div');
+            pn.className='panel';
+            ct.appendChild(pn);
+
+            tabs.push({el, pn, url:null, title:'New Tab', fav:null});
+            tab(i);
+            start?load(start):home(pn);
+        }
+
+        ui.addEventListener('keydown',e=>{if(e.key==='Enter')load(ui.value)});
+        nt.onclick = ()=>newTab();
+
+        newTab(); // first tab
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.png">
-    <title>REDVOID</title>
+    <title>Rebel Search</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -118,7 +118,7 @@
         function home(p) {
             p.innerHTML = `
                 <div class="home">
-                    <h1>REDVOID</h1>
+                    <h1>Rebel Search</h1>
                     <input class="home-input" placeholder="SEARCH OR ENTER URL" onkeydown="if(event.key==='Enter')go(this.value)">
                     <div class="suggestions">
                         ${sites.map(s=>`<div class="sbtn" onclick="go('${s.u}')">${s.n}</div>`).join('')}
@@ -176,7 +176,7 @@
                 tabs[cur].title = t;
                 tabs[cur].fav = ico;
                 tabs[cur].el.querySelector('span').textContent = t.slice(0,18)+(t.length>18?'...':'');
-                document.title = 'REDVOID • '+t;
+                document.title = 'Rebel Search • '+t;
                 favicon(ico);
             })
             .catch(e=> p.innerHTML=`<div style="color:#f66;text-align:center;padding:100px;font-size:24px">ERROR<br>${e}</div>`);
